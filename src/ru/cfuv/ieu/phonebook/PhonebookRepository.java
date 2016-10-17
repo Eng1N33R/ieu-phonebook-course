@@ -27,10 +27,10 @@ public class PhonebookRepository {
             if (execute("select count(*) from sqlite_master where" +
                     " type = 'table' and name != 'sqlite_sequence';")
                     .getInt(1) == 0) {
-                execute("create table if not exists contacts " +
+                executeUpdate("create table contacts " +
                         "(id integer primary key autoincrement," +
-                        "name varchar(255)) default charset=utf8");
-                execute("create table if not exists numbers " +
+                        "name varchar(255))");
+                executeUpdate("create table numbers " +
                         "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
                         "number varchar(255))");
             }
@@ -55,6 +55,15 @@ public class PhonebookRepository {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void executeUpdate(String query) {
+        try {
+            Statement stmt = connection.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateName(PhonebookContact contact, String name) {
