@@ -1,29 +1,40 @@
 package ru.cfuv.ieu.phonebook.ui;
 
-import ru.cfuv.ieu.phonebook.PhonebookRepository;
-
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-// TODO: Осмысленный интерфейс
-public class PhonebookRoot {
-    private final PhonebookRepository repo;
+public class PhonebookRoot extends JFrame {
+    private JButton addField;
+    private JTable table1;
+    private JButton editField;
+    private JButton delField;
+    private JPanel rootpanel;
 
-    public PhonebookRoot(PhonebookRepository repo) {
-        this.repo = repo;
-        JFrame f = new JFrame("Contact Manager");
-        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        f.setLayout(new BorderLayout());
+    public PhonebookRoot() {
+        this.getContentPane().add(rootpanel);
+        this.editField.setEnabled(false);
+        this.delField.setEnabled(false);
+        addField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CustomField person = new CustomField();
+                person.id = 1;
+                person.name = "Max";
+                Expansion exp = new Expansion(person);
+                exp.pack();
+                exp.setSize(new Dimension(200, 200));
+                exp.setVisible(true);
+            }
+        });
+    }
 
-        JButton b = new JButton("click");
-        b.setBounds(130,100,100, 40);
-
-        f.getContentPane().add(b);
-
-        DefaultListModel<String> model = new DefaultListModel<>();
-        JList<String> list = new JList<>(model);
-
-        f.pack();
-        f.setVisible(true);
+    public static void main(String[] args) {
+        // write your code here
+        PhonebookRoot test = new PhonebookRoot();
+        test.pack();
+        //test.setSize(new Dimension(200,200));
+        test.setVisible(true);
     }
 }
