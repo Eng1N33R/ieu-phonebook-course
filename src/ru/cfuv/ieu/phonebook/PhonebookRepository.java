@@ -70,8 +70,27 @@ public class PhonebookRepository {
     }
 
     public void addNumber(PhonebookContact contact, PhonebookNumber number) {
-        execute("insert into numbers (contact, number) values ("
-                + contact.getId() + ", " + number.getNumber() + ")");
+        try {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "insert into numbers (contact, number) values (?, ?)");
+            stmt.setInt(1, contact.getId());
+            stmt.setString(2, number.getNumber());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeNumber(PhonebookContact contact, PhonebookNumber number) {
+        try {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "delete from numbers where contact = ? and number = ?");
+            stmt.setInt(1, contact.getId());
+            stmt.setString(2, number.getNumber());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public List<PhonebookContact> getContacts() {
