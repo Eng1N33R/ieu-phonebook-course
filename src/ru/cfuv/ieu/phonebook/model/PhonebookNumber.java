@@ -31,7 +31,7 @@ public class PhonebookNumber {
     @Override
     public String toString() {
         for (Format format : Format.values()) {
-            for (int i = 2; i > 0; i--) {
+            for (int i = 3; i > 0; i--) {
                 if (number.substring(0, i).equals(format.country)) {
                     String fstring = format.format;
                     String sNumber;
