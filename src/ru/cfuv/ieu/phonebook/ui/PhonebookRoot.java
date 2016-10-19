@@ -12,11 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class PhonebookRoot extends JFrame {
     private final PhonebookRepository repo = new PhonebookRepository();
     private final PhonebookTableModel tableModel = new PhonebookTableModel();
+    private final PhonebookListModel listModel = new PhonebookListModel();
 
     private JButton addField;
     private JTable table1;
@@ -28,7 +30,7 @@ public class PhonebookRoot extends JFrame {
     private JButton settingsBtn;
     private JPanel contactInfoPanel;
     private JLabel nameDisplay;
-    private JLabel numberDisplay;
+    private JList<PhonebookNumber> numberDisplay;
     private JLabel nameLabel;
     private JLabel numberLabel;
 
@@ -72,10 +74,21 @@ public class PhonebookRoot extends JFrame {
                 delete(tableModel.getContact(table1.getSelectedRow()));
             }
         });
+        copyField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addDisplayNumber(new PhonebookNumber("447710476771"));
+            }
+        });
+
+        numberDisplay.setModel(listModel);
 
         table1.setModel(tableModel);
-        tableModel.addContact(new PhonebookContact(repo, 1, "Тест Тестович",
-                Collections.singletonList(new PhonebookNumber("79787064535"))));
+        tableModel.addContact(new PhonebookContact(repo, 1, "Тестов Тест Тестович",
+                Arrays.asList(new PhonebookNumber("79787064535"), new PhonebookNumber("6581636523"),
+                        new PhonebookNumber("14033509099"), new PhonebookNumber("8615999529217"),
+                        new PhonebookNumber("4915223000305"), new PhonebookNumber("447399139404"),
+                        new PhonebookNumber("380953954724"))));
         table1.getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
                     @Override
@@ -83,9 +96,9 @@ public class PhonebookRoot extends JFrame {
                         contactInfoPanel.setVisible(true);
                         nameDisplay.setText(tableModel.getContact(
                                 table1.getSelectedRow()).getName());
-                        numberDisplay.setText(tableModel.getContact(
-                                table1.getSelectedRow()).getNumbers().get(0)
-                                        .toString());
+                        listModel.clear();
+                        listModel.addNumbers(tableModel.getContact(
+                                table1.getSelectedRow()).getNumbers());
                         editField.setEnabled(true);
                         copyField.setEnabled(true);
                         deleteField.setEnabled(true);
@@ -101,6 +114,10 @@ public class PhonebookRoot extends JFrame {
         if (dialogResult == JOptionPane.YES_NO_OPTION) {
             System.out.println("deleting");
         }
+    }
+
+    private void addDisplayNumber(PhonebookNumber number) {
+        listModel.addNumber(number);
     }
 
     public static void main(String[] args) {
