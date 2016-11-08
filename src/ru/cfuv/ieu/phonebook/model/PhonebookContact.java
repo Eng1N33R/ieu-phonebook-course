@@ -8,34 +8,45 @@ public class PhonebookContact {
     private final PhonebookRepository repo;
     private final int internalId;
     private String name;
-    private final List<PhonebookNumber> numbers;
 
     public PhonebookContact(PhonebookRepository repo, int id, String name,
                             List<PhonebookNumber> numbers) {
         this.repo = repo;
         this.internalId = id;
         this.name = name;
-        this.numbers = numbers;
+        if (numbers != null) repo.addNumbers(this, numbers);
+    }
+
+    public PhonebookContact(PhonebookRepository repo, int id, String name) {
+        this(repo, id, name, null);
     }
 
     public int getId() {
         return internalId;
     }
 
-    public void setName(String name) {
-        repo.updateName(this, name);
-        this.name = name;
-    }
-
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        repo.updateName(this);
+    }
+
+    public List<PhonebookNumber> getNumbers() {
+        return repo.getNumbers(this);
     }
 
     public void addNumber(PhonebookNumber number) {
         repo.addNumber(this, number);
     }
 
-    public List<PhonebookNumber> getNumbers() {
-        return numbers;
+    public List<PhonebookField> getFields() {
+        return repo.getFields(this);
+    }
+
+    public void addField(String name, String value) {
+        repo.addField(this, name, value);
     }
 }

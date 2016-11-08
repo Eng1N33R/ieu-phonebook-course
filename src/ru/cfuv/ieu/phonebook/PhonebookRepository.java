@@ -1,6 +1,7 @@
 package ru.cfuv.ieu.phonebook;
 
 import ru.cfuv.ieu.phonebook.model.PhonebookContact;
+import ru.cfuv.ieu.phonebook.model.PhonebookField;
 import ru.cfuv.ieu.phonebook.model.PhonebookNumber;
 
 import java.sql.*;
@@ -32,7 +33,14 @@ public class PhonebookRepository {
                         "name varchar(255))");
                 executeUpdate("create table numbers " +
                         "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                        "number varchar(255))");
+                        "contact integer," +
+                        "number varchar(255)," +
+                        "FOREIGN KEY(contact) REFERENCES contacts(id))");
+                executeUpdate("create table fields " +
+                        "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "contact integer, name varchar(255)," +
+                        "value varchar(255)," +
+                        "FOREIGN KEY(contact) REFERENCES contacts(id))");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,36 +74,12 @@ public class PhonebookRepository {
         }
     }
 
-    public void updateName(PhonebookContact contact, String name) {
+    public void updateName(PhonebookContact contact) {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     "update contacts set name = ? where id = ?");
-            stmt.setString(1, name);
+            stmt.setString(1, contact.getName());
             stmt.setInt(2, contact.getId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void addNumber(PhonebookContact contact, PhonebookNumber number) {
-        try {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "insert into numbers (contact, number) values (?, ?)");
-            stmt.setInt(1, contact.getId());
-            stmt.setString(2, number.getNumber());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void removeNumber(PhonebookContact contact, PhonebookNumber number) {
-        try {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "delete from numbers where contact = ? and number = ?");
-            stmt.setInt(1, contact.getId());
-            stmt.setString(2, number.getNumber());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -109,16 +93,7 @@ public class PhonebookRepository {
             while (resContacts.next()) {
                 int id = resContacts.getInt(1);
                 String name = resContacts.getString(2);
-                List<PhonebookNumber> numbers = new ArrayList<>();
-                ResultSet resNumbers = execute("select * from numbers where" +
-                        " contact = " + id);
-                while (resNumbers.next()) {
-                    numbers.add(new PhonebookNumber(resNumbers.getString(3)));
-                }
-                resNumbers.close();
-
-                PhonebookContact contact = new PhonebookContact(this, id, name,
-                        numbers);
+                PhonebookContact contact = new PhonebookContact(this, id, name);
                 contacts.add(contact);
             }
             resContacts.close();
@@ -149,6 +124,134 @@ public class PhonebookRepository {
                 insert2.setString(2, number.getNumber());
                 insert2.executeUpdate();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeContact(PhonebookContact contact) {
+        try {
+            PreparedStatement delete = connection.prepareStatement(
+                    "delete from numbers where contact = ?");
+            delete.setInt(1, contact.getId());
+            delete.executeUpdate();
+
+            delete = connection.prepareStatement(
+                    "delete from fields where contact = ?");
+            delete.setInt(1, contact.getId());
+            delete.executeUpdate();
+
+            delete = connection.prepareStatement(
+                    "delete from contacts where id = ?");
+            delete.setInt(1, contact.getId());
+            delete.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addNumber(PhonebookContact contact, PhonebookNumber number) {
+        try {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "insert into numbers (contact, number) values (?, ?)");
+            stmt.setInt(1, contact.getId());
+            stmt.setString(2, number.getNumber());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addNumbers(PhonebookContact c, List<PhonebookNumber> numbers) {
+        for (PhonebookNumber n : numbers) {
+            addNumber(c, n);
+        }
+    }
+
+    public List<PhonebookNumber> getNumbers(PhonebookContact c) {
+        List<PhonebookNumber> numbers = new ArrayList<>();
+        try {
+            ResultSet resNumbers = execute("select * from numbers where" +
+                    " contact = " + c.getId());
+            while (resNumbers.next()) {
+                numbers.add(new PhonebookNumber(resNumbers.getString(3)));
+            }
+            resNumbers.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return numbers;
+    }
+
+    public void removeNumber(PhonebookContact contact, PhonebookNumber number) {
+        try {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "delete from numbers where contact = ? and number = ?");
+            stmt.setInt(1, contact.getId());
+            stmt.setString(2, number.getNumber());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addField(PhonebookContact contact, String name, String value) {
+        try {
+            PreparedStatement insert = connection.prepareStatement(
+                    "insert into fields (contact, name, value)" +
+                            " values (?, ?, ?)");
+            insert.setInt(1, contact.getId());
+            insert.setString(2, name);
+            insert.setString(3, value);
+            insert.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<PhonebookField> getFields(PhonebookContact contact) {
+        List<PhonebookField> fields = new ArrayList<>();
+        try {
+            PreparedStatement get = connection.prepareStatement(
+                    "select id, name, value from fields where contact = ?");
+            get.setInt(1, contact.getId());
+            ResultSet resFields = get.executeQuery();
+            while (resFields.next()) {
+                int id = resFields.getInt(1);
+                String name = resFields.getString(2);
+                String value = resFields.getString(3);
+                PhonebookField field = new PhonebookField(this, id,
+                        contact, name, value);
+                fields.add(field);
+            }
+            resFields.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return fields;
+    }
+
+    public void updateField(PhonebookField field) {
+        try {
+            PreparedStatement update = connection.prepareStatement(
+                    "update fields set contact = ?, name = ?, value = ? " +
+                            "where id = ?");
+            update.setInt(1, field.getContact());
+            update.setString(2, field.getName());
+            update.setString(3, field.getValue());
+            update.setInt(4, field.getId());
+            update.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteField(PhonebookField field) {
+        try {
+            PreparedStatement delete = connection.prepareStatement(
+                    "delete from fields where id = ?");
+            delete.setInt(1, field.getId());
+            delete.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
