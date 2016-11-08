@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class PhonebookEditForm extends JFrame {
     private final PhonebookContact contact;
@@ -19,6 +20,7 @@ public class PhonebookEditForm extends JFrame {
     private JButton addNumber;
     private JButton addField;
     private JTextField textField1;
+    private java.util.List<JComponent[]> addFields = new ArrayList<>();
     private int numberGridCounter = 1;
     private int fieldGridCounter = 0;
 
@@ -66,32 +68,52 @@ public class PhonebookEditForm extends JFrame {
         });
 
         addField.addActionListener(new ActionListener() {
+            private void redrawList() {
+                additionalFieldsContainer.removeAll();
+                fieldGridCounter = 0;
+                for (JComponent[] comps : addFields) {
+                    GridBagConstraints c = new GridBagConstraints();
+                    c.gridy = fieldGridCounter;
+
+                    c.gridx = 0;
+                    c.weightx = 0.2;
+                    c.fill = 1;
+                    additionalFieldsContainer.add(comps[0], c);
+
+                    c.gridx = 1;
+                    c.weightx = 0.75;
+                    additionalFieldsContainer.add(comps[1], c);
+
+                    c.gridx = 2;
+                    c.weightx = 0.05;
+                    additionalFieldsContainer.add(comps[2], c);
+
+                    fieldGridCounter++;
+                }
+                additionalFieldsContainer.revalidate();
+                additionalFieldsContainer.repaint();
+            }
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridy = fieldGridCounter;
-
-                c.gridx = 0;
-                c.weightx = 0.2;
-                c.fill = 1;
                 JTextField name = new JTextField();
-                additionalFieldsContainer.add(name, c);
-
-                c.gridx = 1;
-                c.weightx = 0.75;
                 JTextField label = new JTextField();
-                additionalFieldsContainer.add(label, c);
-
-                c.gridx = 2;
-                c.weightx = 0.05;
                 JButton delete = new JButton(new ImageIcon("res/Delete.png"));
                 delete.setVisible(true);
-                additionalFieldsContainer.add(delete,c);
 
-                additionalFieldsContainer.revalidate();
+                JComponent[] row = new JComponent[]{name, label, delete};
+                delete.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.out.println(addFields.remove(row));
+                        redrawList();
+                    }
+                });
+                addFields.add(row);
 
-
+                redrawList();
             }
+
         });
     }
 }
