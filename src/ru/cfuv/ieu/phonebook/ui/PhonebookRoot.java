@@ -119,7 +119,7 @@ public class PhonebookRoot extends JFrame {
     private void editContact(PhonebookContact c) {
         PhonebookEditForm exp = new PhonebookEditForm(c);
         exp.pack();
-        exp.setSize(new Dimension(200, 200));
+        exp.setSize(new Dimension(400, 250));
         exp.setVisible(true);
         exp.setLocationRelativeTo(null);
     }
