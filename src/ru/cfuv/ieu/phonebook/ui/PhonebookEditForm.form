@@ -37,7 +37,7 @@
         <children>
           <grid id="c020e" binding="additionalFieldsContainer" layout-manager="GridBagLayout">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false">
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
                 <preferred-size width="0" height="43"/>
               </grid>
             </constraints>
@@ -45,7 +45,7 @@
             <border type="none"/>
             <children/>
           </grid>
-          <component id="f131" class="javax.swing.JButton" binding="добавитьПолеButton" default-binding="true">
+          <component id="f131" class="javax.swing.JButton" binding="addField">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -83,7 +83,7 @@
         </constraints>
         <properties/>
       </component>
-      <component id="db54e" class="javax.swing.JButton" binding="добавитьНомерButton" default-binding="true">
+      <component id="db54e" class="javax.swing.JButton" binding="addNumber">
         <constraints>
           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
