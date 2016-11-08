@@ -6,7 +6,8 @@ import javax.swing.*;
 
 public class PhonebookEditForm extends JFrame {
     private JPanel expPanel;
-    public PhonebookEditForm(PhonebookContact person){
+
+    public PhonebookEditForm(PhonebookContact person) {
         this.getContentPane().add(expPanel);
         JOptionPane.showMessageDialog(null, person.getName());
     }
