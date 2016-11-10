@@ -22,9 +22,15 @@ public class PhonebookNumber {
         String format;
     }
 
+    private final int id;
     private String number;
 
     public PhonebookNumber(String sNumber) {
+        this(-1, sNumber);
+    }
+
+    public PhonebookNumber(int id, String sNumber) {
+        this.id = id;
         this.number = sNumber;
     }
 
@@ -49,6 +55,10 @@ public class PhonebookNumber {
             }
         }
         return "+" + number;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getNumber() {
