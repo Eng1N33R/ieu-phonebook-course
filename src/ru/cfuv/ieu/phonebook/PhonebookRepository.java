@@ -47,14 +47,6 @@ public class PhonebookRepository {
         }
     }
 
-    public void cleanup() {
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     private ResultSet execute(String query) {
         try {
             Statement stmt = connection.createStatement();
@@ -103,12 +95,8 @@ public class PhonebookRepository {
         return contacts;
     }
 
-    public void addContact(String name, String snumber) {
-        PhonebookNumber number = new PhonebookNumber(snumber);
-        addContact(name, new ArrayList<>(Collections.singletonList(number)));
-    }
-
-    public void addContact(String name, List<PhonebookNumber> numbers) {
+    public PhonebookContact addContact(String name,
+                                       List<PhonebookNumber> numbers) {
         try {
             PreparedStatement insert = connection.prepareStatement(
                     "insert into contacts (name) values (?)");
@@ -124,9 +112,12 @@ public class PhonebookRepository {
                 insert2.setString(2, number.getNumber());
                 insert2.executeUpdate();
             }
+
+            return new PhonebookContact(this, rowid, name);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void removeContact(PhonebookContact contact) {
@@ -174,7 +165,8 @@ public class PhonebookRepository {
             ResultSet resNumbers = execute("select * from numbers where" +
                     " contact = " + c.getId());
             while (resNumbers.next()) {
-                numbers.add(new PhonebookNumber(resNumbers.getString(3)));
+                numbers.add(new PhonebookNumber(resNumbers.getInt(1),
+                        resNumbers.getString(3)));
             }
             resNumbers.close();
         } catch (SQLException e) {
@@ -183,13 +175,35 @@ public class PhonebookRepository {
         return numbers;
     }
 
-    public void removeNumber(PhonebookContact contact, PhonebookNumber number) {
+    public void updateNumber(PhonebookContact contact, PhonebookNumber oldn,
+                             PhonebookNumber newn) {
         try {
             PreparedStatement stmt = connection.prepareStatement(
-                    "delete from numbers where contact = ? and number = ?");
-            stmt.setInt(1, contact.getId());
-            stmt.setString(2, number.getNumber());
+                    "update numbers set number = ? where contact = ? and " +
+                            "number = ?");
+            stmt.setString(1, newn.getNumber());
+            stmt.setInt(2, contact.getId());
+            stmt.setString(3, oldn.getNumber());
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeNumber(PhonebookContact contact, PhonebookNumber number) {
+        try {
+            if (number.getId() != -1) {
+                PreparedStatement stmt = connection.prepareStatement(
+                        "delete from numbers where id = ?");
+                stmt.setInt(1, number.getId());
+                stmt.executeUpdate();
+            } else {
+                PreparedStatement stmt = connection.prepareStatement(
+                        "delete from numbers where contact = ? and number = ?");
+                stmt.setInt(1, contact.getId());
+                stmt.setString(2, number.getNumber());
+                stmt.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
