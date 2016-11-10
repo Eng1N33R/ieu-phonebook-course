@@ -24,7 +24,7 @@ public class PhonebookContactPopupMenu extends JPopupMenu {
         item1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                PhonebookEditForm form = new PhonebookEditForm(contact);
+                PhonebookEditForm form = new PhonebookEditForm(repo, contact);
                 form.pack();
                 form.setSize(new Dimension(200, 200));
                 form.setVisible(true);

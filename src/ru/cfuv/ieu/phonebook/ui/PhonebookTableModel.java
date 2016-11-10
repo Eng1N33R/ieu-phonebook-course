@@ -20,8 +20,23 @@ public class PhonebookTableModel extends AbstractTableModel {
         fireTableRowsDeleted(index, index);
     }
 
+    public void clear() {
+        int index = contacts.size();
+        contacts.clear();
+        fireTableRowsDeleted(0, Math.max(index-1, 0));
+    }
+
     public PhonebookContact getContact(int index) {
         return contacts.get(index);
+    }
+
+    public int findRowById(int id) {
+        for (PhonebookContact c : contacts) {
+            if (c.getId() == id) {
+                return contacts.indexOf(c);
+            }
+        }
+        return -1;
     }
 
     @Override

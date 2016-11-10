@@ -13,9 +13,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
+import java.util.*;
+import java.util.List;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "Convert2Lambda"})
 public class PhonebookRoot extends JFrame {
     private final PhonebookRepository repo = new PhonebookRepository();
     private final PhonebookTableModel tableModel = new PhonebookTableModel();
@@ -55,6 +56,16 @@ public class PhonebookRoot extends JFrame {
         }
     }
 
+    private void rebuildTable() {
+        tableModel.clear();
+        java.util.List<PhonebookContact> contacts = repo.getContacts();
+        for (PhonebookContact c : contacts) {
+            tableModel.addContact(c);
+        }
+        table1.revalidate();
+        table1.repaint();
+    }
+
     public PhonebookRoot() {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setIconImage((new ImageIcon("res/Person.png")).getImage());
@@ -63,9 +74,7 @@ public class PhonebookRoot extends JFrame {
         addField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                PhonebookContact mock = new PhonebookContact(null, 0,
-                        "Иван Новый", null);
-                editContact(mock);
+                createContact();
             }
         });
         deleteField.addActionListener(new ActionListener() {
@@ -77,12 +86,11 @@ public class PhonebookRoot extends JFrame {
         copyField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                addDisplayNumber(new PhonebookNumber("79787064535"));
+                duplicate(tableModel.getContact(table1.getSelectedRow()));
             }
         });
         numberDisplay.setModel(listModel);
 
-        final int[] i = new int[]{2};
         editField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -91,37 +99,44 @@ public class PhonebookRoot extends JFrame {
         });
 
         table1.setModel(tableModel);
-        PhonebookContact contact = new PhonebookContact(repo, 1, "Тест Тестович",
+        PhonebookContact contact = repo.addContact("Тест Тестович",
                 Arrays.asList(new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535"),
-                        new PhonebookNumber("79787064535")));
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535"),
+                new PhonebookNumber("79787064535")));
         contact.addField("Email", "painttool@gmail.com");
         contact.addField("Адрес", "<html>Россия, Симферополь, ул. Комсомольская, д. 6, кв. 57</html>");
-        tableModel.addContact(contact);
 
         table1.getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
-                        displayContact(
-                                tableModel.getContact(table1.getSelectedRow()));
+                        int i = table1.getSelectedRow();
+                        if (i >= 0) displayContact(tableModel.getContact(i));
                     }
                 });
         table1.addMouseListener(new TableRightClickListener());
+        rebuildTable();
+    }
+
+    private void createContact() {
+        int result = (new PhonebookEditForm(repo)).display();
+        if (result == PhonebookEditForm.YES) {
+            rebuildTable();
+        }
     }
 
     private void editContact(PhonebookContact c) {
-        PhonebookEditForm exp = new PhonebookEditForm(c);
-        exp.pack();
-        exp.setSize(new Dimension(400, 250));
-        exp.setVisible(true);
-        exp.setLocationRelativeTo(null);
+        int result = (new PhonebookEditForm(repo, c)).display();
+        if (result == PhonebookEditForm.YES) {
+            rebuildTable();
+            displayContact(c);
+        }
     }
 
     private void displayContact(PhonebookContact c) {
@@ -137,6 +152,7 @@ public class PhonebookRoot extends JFrame {
         java.util.List<PhonebookField> fields = c.getFields();
         GridBagConstraints constr = new GridBagConstraints();
         constr.anchor = GridBagConstraints.WEST;
+        additionalFieldsContainer.removeAll();
         additionalFieldsContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
         int i = 0;
         for (PhonebookField field : fields) {
@@ -153,10 +169,23 @@ public class PhonebookRoot extends JFrame {
 
             i++;
         }
+        additionalFieldsContainer.revalidate();
+        additionalFieldsContainer.repaint();
     }
 
     private void addDisplayNumber(PhonebookNumber number) {
         listModel.addNumber(number);
+    }
+
+    private void duplicate(PhonebookContact c) {
+        PhonebookContact nc = repo.addContact(c.getName(), c.getNumbers());
+        List<PhonebookField> fields = c.getFields();
+        for (PhonebookField f : fields) {
+            nc.addField(f.getName(), f.getValue());
+        }
+        rebuildTable();
+        int i = tableModel.findRowById(nc.getId());
+        table1.setRowSelectionInterval(i, i);
     }
 
     private void delete(PhonebookContact c) {
@@ -164,7 +193,9 @@ public class PhonebookRoot extends JFrame {
                 "Вы уверены, что хотите удалить контакт " + c.getName() + "?",
                 "Удалить контакт", JOptionPane.YES_NO_OPTION);
         if (dialogResult == JOptionPane.YES_NO_OPTION) {
-            System.out.println("deleting");
+            repo.removeContact(c);
+            contactInfoPanel.setVisible(false);
+            rebuildTable();
         }
     }
 
