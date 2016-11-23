@@ -2,6 +2,7 @@ package ru.cfuv.ieu.phonebook.ui;
 
 import ru.cfuv.ieu.phonebook.model.PhonebookContact;
 import ru.cfuv.ieu.phonebook.model.PhonebookNumber;
+import ru.cfuv.ieu.phonebook.settings.PhonebookSettings;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -9,6 +10,11 @@ import java.util.List;
 
 public class PhonebookTableModel extends AbstractTableModel {
     private final List<PhonebookContact> contacts = new ArrayList<>();
+    private boolean format;
+
+    public PhonebookTableModel(PhonebookSettings settings) {
+        format = settings.getFormatting();
+    }
 
     public void addContact(PhonebookContact contact) {
         contacts.add(contact);
@@ -73,11 +79,15 @@ public class PhonebookTableModel extends AbstractTableModel {
                 return c.getName();
             case 1:
                 List<PhonebookNumber> numbers = c.getNumbers();
-                String text = numbers.get(0).toString();
+                String text = numbers.get(0).toString(format);
                 if (numbers.size()-1 > 0) text += " (и ещё "
                         + (numbers.size()-1) + ")";
                 return text;
             default: throw new IndexOutOfBoundsException();
         }
+    }
+
+    public void setFormat(boolean b) {
+        format = b;
     }
 }
