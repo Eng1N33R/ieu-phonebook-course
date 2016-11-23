@@ -21,7 +21,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="26d2" class="javax.swing.JLabel">
+              <component id="26d2" class="javax.swing.JLabel" binding="nameLabel">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -29,9 +29,9 @@
                   <text value="Имя"/>
                 </properties>
               </component>
-              <component id="ddcde" class="javax.swing.JLabel">
+              <component id="ddcde" class="javax.swing.JLabel" binding="numberLabel">
                 <constraints>
-                  <grid row="1" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Номера"/>
