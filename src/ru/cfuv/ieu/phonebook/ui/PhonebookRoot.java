@@ -17,12 +17,10 @@ import java.util.List;
 
 @SuppressWarnings({"unused", "Convert2Lambda"})
 public class PhonebookRoot extends JFrame {
-    private final PhonebookSettings settings = new PhonebookSettings();
-    private final PhonebookRepository repo = new PhonebookRepository(settings);
-    private final PhonebookTableModel tableModel =
-            new PhonebookTableModel(settings);
-    private final PhonebookNumberListModel listModel =
-            new PhonebookNumberListModel(settings);
+    private final PhonebookSettings settings;
+    private final PhonebookRepository repo;
+    private final PhonebookTableModel tableModel;
+    private final PhonebookNumberListModel listModel;
 
     private JButton addField;
     private JTable table1;
@@ -146,12 +144,15 @@ public class PhonebookRoot extends JFrame {
         table1.repaint();
     }
 
-    public PhonebookRoot() {
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.setIconImage((new ImageIcon("res/Person.png")).getImage());
-        this.setTitle("Адресная книга");
+    public PhonebookRoot(PhonebookSettings settings, PhonebookRepository repo) {
+        this.settings = settings;
+        this.repo = repo;
+        this.tableModel = new PhonebookTableModel(settings);
+        this.listModel = new PhonebookNumberListModel(settings);
+
         this.getContentPane().add(rootpanel);
         buildMenu();
+
         addField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -233,6 +234,13 @@ public class PhonebookRoot extends JFrame {
         table1.addMouseListener(new TableRightClickListener());
         rebuildTable();
         refreshScales();
+
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.setIconImage((new ImageIcon("res/Person.png")).getImage());
+        this.setTitle("Адресная книга");
+        this.pack();
+        this.setSize(new Dimension(800, 600));
+        this.setLocationRelativeTo(null);
     }
 
     private void buildMenu() {
@@ -410,20 +418,6 @@ public class PhonebookRoot extends JFrame {
             repo.commitTransaction();
             contactInfoPanel.setVisible(false);
             rebuildTable();
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            // write your code here
-            PhonebookRoot test = new PhonebookRoot();
-            test.pack();
-            test.setSize(new Dimension(800, 600));
-            test.setLocationRelativeTo(null);
-            test.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
