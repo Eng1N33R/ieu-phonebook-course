@@ -378,6 +378,8 @@ public class PhonebookEditForm extends JDialog {
     public int display() {
         this.getContentPane().add(expPanel);
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        this.setIconImage((new ImageIcon("res/Person.png")).getImage());
+        this.setTitle("Редактировать контакт");
         this.pack();
         this.setModal(true);
         this.setSize(new Dimension(400, 260));

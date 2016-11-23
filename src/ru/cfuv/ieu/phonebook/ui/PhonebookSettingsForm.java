@@ -123,6 +123,7 @@ public class PhonebookSettingsForm extends JDialog {
     public int display() {
         this.getContentPane().add(root);
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        this.setTitle("Настройки");
         this.pack();
         this.setModal(true);
         this.setResizable(false);
