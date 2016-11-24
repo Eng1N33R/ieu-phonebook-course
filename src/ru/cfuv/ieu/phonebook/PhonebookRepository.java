@@ -3,6 +3,7 @@ package ru.cfuv.ieu.phonebook;
 import ru.cfuv.ieu.phonebook.model.PhonebookContact;
 import ru.cfuv.ieu.phonebook.model.PhonebookField;
 import ru.cfuv.ieu.phonebook.model.PhonebookNumber;
+import ru.cfuv.ieu.phonebook.settings.PhonebookSettings;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,12 +11,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class PhonebookRepository {
+    private final PhonebookSettings settings;
     private Connection connection;
 
-    public PhonebookRepository() {
+    public PhonebookRepository(PhonebookSettings settings) {
+        this.settings = settings;
+
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" +
-                    "phonebook.db");
+                    settings.getDBPath());
             connection.setAutoCommit(false);
             setup();
         } catch (SQLException e) {
@@ -41,6 +45,7 @@ public class PhonebookRepository {
                         "contact integer, name varchar(255)," +
                         "value varchar(255)," +
                         "FOREIGN KEY(contact) REFERENCES contacts(id))");
+                connection.commit();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,6 +66,23 @@ public class PhonebookRepository {
         try {
             Statement stmt = connection.createStatement();
             stmt.executeUpdate(query);
+            connection.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void commitTransaction() {
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void rollbackTransaction() {
+        try {
+            connection.rollback();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -73,6 +95,7 @@ public class PhonebookRepository {
             stmt.setString(1, contact.getName());
             stmt.setInt(2, contact.getId());
             stmt.executeUpdate();
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -112,6 +135,7 @@ public class PhonebookRepository {
                 insert2.setString(2, number.getNumber());
                 insert2.executeUpdate();
             }
+            connection.commit();
 
             return new PhonebookContact(this, rowid, name);
         } catch (SQLException e) {
@@ -148,6 +172,7 @@ public class PhonebookRepository {
             stmt.setInt(1, contact.getId());
             stmt.setString(2, number.getNumber());
             stmt.executeUpdate();
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -190,7 +215,8 @@ public class PhonebookRepository {
         }
     }
 
-    public void removeNumber(PhonebookContact contact, PhonebookNumber number) {
+    public void removeNumber(PhonebookContact contact, PhonebookNumber number,
+                             boolean stage) {
         try {
             if (number.getId() != -1) {
                 PreparedStatement stmt = connection.prepareStatement(
@@ -203,6 +229,7 @@ public class PhonebookRepository {
                 stmt.setInt(1, contact.getId());
                 stmt.setString(2, number.getNumber());
                 stmt.executeUpdate();
+                if (!stage) connection.commit();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -218,6 +245,7 @@ public class PhonebookRepository {
             insert.setString(2, name);
             insert.setString(3, value);
             insert.executeUpdate();
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -255,19 +283,25 @@ public class PhonebookRepository {
             update.setString(3, field.getValue());
             update.setInt(4, field.getId());
             update.executeUpdate();
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void deleteField(PhonebookField field) {
+    public void removeField(PhonebookField field, boolean stage) {
         try {
             PreparedStatement delete = connection.prepareStatement(
                     "delete from fields where id = ?");
             delete.setInt(1, field.getId());
             delete.executeUpdate();
+            if (!stage) connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public PhonebookSettings getSettings() {
+        return settings;
     }
 }

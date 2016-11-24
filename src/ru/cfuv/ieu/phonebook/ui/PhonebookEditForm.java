@@ -6,6 +6,7 @@ import ru.cfuv.ieu.phonebook.model.PhonebookField;
 import ru.cfuv.ieu.phonebook.model.PhonebookNumber;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,10 +42,21 @@ public class PhonebookEditForm extends JDialog {
     private JButton addField;
     private JButton cancel;
     private JButton okay;
+    private JLabel nameLabel;
+    private JLabel numberLabel;
     private boolean numbersAdded = false;
     private boolean fieldsAdded = false;
     private java.util.List<Object[]> numbers = new ArrayList<>();
     private java.util.List<Object[]> addFields = new ArrayList<>();
+
+    private double scale;
+    private static final int TFIELD = 0;
+    private static final int BUTTON = 1;
+    private static final int LABEL = 2;
+    private final Font tfieldFont = nameField.getFont();
+    private final Font btnFont = okay.getFont();
+    private final Font labelFont = nameField.getFont();
+    private Font borderFont;
 
     private void addExistingNumbers() {
         numberPanel.removeAll();
@@ -84,7 +96,7 @@ public class PhonebookEditForm extends JDialog {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             numbers.remove(row);
-                            repo.removeNumber(contact, number);
+                            repo.removeNumber(contact, number, true);
                             redrawNumbers();
                         }
                     });
@@ -123,7 +135,7 @@ public class PhonebookEditForm extends JDialog {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             addFields.remove(row);
-                            repo.deleteField(field);
+                            repo.removeField(field, true);
                             redrawFields();
                         }
                     });
@@ -195,6 +207,48 @@ public class PhonebookEditForm extends JDialog {
         this.dispose();
     }
 
+    private void setScale(JComponent c, int type) {
+        if (type == TFIELD) {
+            c.setFont(new Font(tfieldFont.getName(),
+                    tfieldFont.getStyle(),
+                    (int) (tfieldFont.getSize() * scale)));
+        } else if (type == BUTTON) {
+            c.setFont(new Font(btnFont.getName(),
+                    btnFont.getStyle(), (int) (btnFont.getSize() * scale)));
+        } else if (type == LABEL) {
+            c.setFont(new Font(labelFont.getName(),
+                    labelFont.getStyle(), (int) (labelFont.getSize() * scale)));
+        }
+    }
+
+    private void refreshScales() {
+        scale = ((double) repo.getSettings().getFontScale()) / 100;
+
+        setScale(nameField, TFIELD);
+        setScale(okay, BUTTON);
+        setScale(cancel, BUTTON);
+        setScale(addNumber, BUTTON);
+        setScale(addField, BUTTON);
+        setScale(nameLabel, LABEL);
+        setScale(numberLabel, LABEL);
+
+        TitledBorder tb = (TitledBorder) additionalFields.getBorder();
+        if (borderFont == null) borderFont = tb.getTitleFont();
+        tb.setTitleFont(new Font(borderFont.getName(),
+                borderFont.getStyle(), (int) (borderFont.getSize() * scale)));
+
+        for (Component c : numberPanel.getComponents()) {
+            if (c instanceof JTextField) {
+                setScale((JTextField) c, TFIELD);
+            }
+        }
+        for (Component c : additionalFieldsContainer.getComponents()) {
+            if (c instanceof JTextField) {
+                setScale((JTextField) c, TFIELD);
+            }
+        }
+    }
+
     public PhonebookEditForm(PhonebookRepository repo, PhonebookContact c) {
         this.contact = c;
         this.repo = repo;
@@ -227,6 +281,7 @@ public class PhonebookEditForm extends JDialog {
                                 ((JTextField) field[2]).getText());
                         repo.updateField(f);
                     }
+                    repo.commitTransaction();
                 } else {
                     numbersToAdd.add(number1);
                     java.util.List<PhonebookNumber> numbers = new ArrayList<>();
@@ -247,6 +302,7 @@ public class PhonebookEditForm extends JDialog {
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                repo.rollbackTransaction();
                 close();
             }
         });
@@ -258,6 +314,7 @@ public class PhonebookEditForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 final JTextField numberField = new JTextField();
+                setScale(numberField, TFIELD);
                 final JButton removeNumber = new JButton(
                         new ImageIcon("res/Delete.png"));
                 removeNumber.setBorderPainted(false);
@@ -289,7 +346,9 @@ public class PhonebookEditForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JTextField name = new JTextField();
+                setScale(name, TFIELD);
                 JTextField label = new JTextField();
+                setScale(label, TFIELD);
                 JButton delete = new JButton(new ImageIcon("res/Delete.png"));
                 delete.setBorderPainted(false);
                 delete.setContentAreaFilled(false);
@@ -313,11 +372,14 @@ public class PhonebookEditForm extends JDialog {
             }
 
         });
+        refreshScales();
     }
 
     public int display() {
         this.getContentPane().add(expPanel);
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        this.setIconImage((new ImageIcon("res/Person.png")).getImage());
+        this.setTitle("Редактировать контакт");
         this.pack();
         this.setModal(true);
         this.setSize(new Dimension(400, 260));

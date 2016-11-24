@@ -1,14 +1,20 @@
 package ru.cfuv.ieu.phonebook.ui;
 
 import ru.cfuv.ieu.phonebook.model.PhonebookNumber;
+import ru.cfuv.ieu.phonebook.settings.PhonebookSettings;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PhonebookNumberListModel extends
-        AbstractListModel<PhonebookNumber> {
+        AbstractListModel<String> {
     private final List<PhonebookNumber> numbers = new ArrayList<>();
+    private boolean format;
+
+    public PhonebookNumberListModel(PhonebookSettings settings) {
+        format = settings.getFormatting();
+    }
 
     @Override
     public int getSize() {
@@ -16,8 +22,8 @@ public class PhonebookNumberListModel extends
     }
 
     @Override
-    public PhonebookNumber getElementAt(int index) {
-        return numbers.get(index);
+    public String getElementAt(int index) {
+        return numbers.get(index).toString(format);
     }
 
     public void clear() {
@@ -43,5 +49,9 @@ public class PhonebookNumberListModel extends
 
     public PhonebookNumber getNumber(int index) {
         return numbers.get(index);
+    }
+
+    public void setFormat(boolean b) {
+        format = b;
     }
 }
